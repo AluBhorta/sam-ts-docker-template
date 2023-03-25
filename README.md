@@ -10,8 +10,11 @@ export IMG_TAG=latest
 
 ### local/dev
 
+
+
 build
 ```sh
+npm run build
 docker build -t $IMAGE_NAME:$IMG_TAG .
 ```
 
@@ -50,6 +53,22 @@ aws lambda update-function-code \
   --function-name $LAMBDA_FUNC_NAME \
   --image-uri 900142166256.dkr.ecr.ap-south-1.amazonaws.com/$IMAGE_NAME:$IMG_TAG
 ```
+
+### sam
+
+init deploy
+
+```sh
+sam build
+sam deploy --guided
+```
+
+updates (after changes to the CFN template or lambda code)
+```sh
+sam build
+sam deploy --resolve-image-repos
+```
+
 
 ## refs
 

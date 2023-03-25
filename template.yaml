@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+  
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  ImageTag:
+    Description: "Tag of the docker image used"
+    Type: String
+    Default: latest
+
+Resources:
+  # MyDockerImageRegistry:
+  #   Type: AWS::ECR::Repository
+  #   Properties: 
+  #     RepositoryName: my-node-lambda
+
+  MyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageUri: !Sub 900142166256.dkr.ecr.ap-south-1.amazonaws.com/my-node-lambda:${ImageTag}
+      # ImageUri: !GetAtt [MyDockerImageRegistry, RepositoryUri]
+      MemorySize: 128
+      Timeout: 30
+      Architectures: 
+        - arm64
+      Events:
+        GetResource:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: get
+        PostResource:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: post
+
+Outputs:
+  ApiEndpoint:
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello"
+    Description: URL for the API endpoint
