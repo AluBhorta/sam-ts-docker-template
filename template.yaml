@@ -3,27 +3,29 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
 Parameters:
+  ImageName:
+    Description: "Tag of the docker image used"
+    Type: String
+    Default: my-node-lambda
   ImageTag:
     Description: "Tag of the docker image used"
     Type: String
     Default: latest
+  ImageArchitecture:
+    Description: "Architecture of the docker image: arm64 or x86_64"
+    Type: String
+    Default: arm64
 
 Resources:
-  # MyDockerImageRegistry:
-  #   Type: AWS::ECR::Repository
-  #   Properties: 
-  #     RepositoryName: my-node-lambda
-
   MyFunction:
     Type: AWS::Serverless::Function
     Properties:
       PackageType: Image
-      ImageUri: !Sub 900142166256.dkr.ecr.ap-south-1.amazonaws.com/my-node-lambda:${ImageTag}
-      # ImageUri: !GetAtt [MyDockerImageRegistry, RepositoryUri]
+      ImageUri: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ImageName}:${ImageTag}"
       MemorySize: 128
       Timeout: 30
       Architectures: 
-        - arm64
+        - !Ref ImageArchitecture
       Events:
         GetResource:
           Type: Api

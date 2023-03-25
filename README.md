@@ -1,74 +1,84 @@
-# docker image based lambdas
+# sam-docker-node-lambda
+
+build and deploy serverless docker node lambdas using aws sam cli.
+
+## prerequisites
+
+- aws cli
+- sam cli
 
 ## getting started
 
+### initialize
+
+set env vars. NOTE: make sure to update `AWS_ACCOUNT_ID` with your actual account ID.
+
 ```sh
 export LAMBDA_FUNC_NAME=my-node-lambda
-export IMAGE_NAME=my-node-lambda
+export IMG_NAME=my-node-lambda
 export IMG_TAG=latest
+export AWS_ACCOUNT_ID=1234567890
+export AWS_REGION=ap-south-1
 ```
 
-### local/dev
+build image
 
-
-
-build
 ```sh
 npm run build
-docker build -t $IMAGE_NAME:$IMG_TAG .
+docker build -t $IMG_NAME:$IMG_TAG .
 ```
 
-run
-```sh
-docker run -p 9000:8080 $IMAGE_NAME:$IMG_TAG
-```
-
-test
-```sh
-curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"payload":"hello world!"}'
-```
-
-### prod
-
-ecr registry creation & login
-```sh
-aws ecr create-repository --repository-name $IMAGE_NAME
-
-aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 900142166256.dkr.ecr.ap-south-1.amazonaws.com
-```
-
-build and push image
+create and login to ecr repo
 
 ```sh
-docker build -t $IMAGE_NAME:$IMG_TAG .
-docker tag $IMAGE_NAME:$IMG_TAG 900142166256.dkr.ecr.ap-south-1.amazonaws.com/$IMAGE_NAME:$IMG_TAG
-docker push 900142166256.dkr.ecr.ap-south-1.amazonaws.com/$IMAGE_NAME:$IMG_TAG
+aws ecr create-repository --repository-name $IMG_NAME
+
+aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 ```
 
-create lambda function using the aws web console and specify the image.
+tag and push image
 
-update lambda function
 ```sh
-aws lambda update-function-code \
-  --function-name $LAMBDA_FUNC_NAME \
-  --image-uri 900142166256.dkr.ecr.ap-south-1.amazonaws.com/$IMAGE_NAME:$IMG_TAG
+docker tag $IMG_NAME:$IMG_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMG_NAME:$IMG_TAG
+docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMG_NAME:$IMG_TAG
 ```
 
-### sam
+NOTE: only run the following command if you're on an `x86_64` system ie. if you've NOT used an `arm64` system to build your docker image.
 
-init deploy
+```sh
+sed -i '' -e 's|Default: arm64|Default: x86_64|' template.yaml
+```
+
+build and deploy the serverless resources with sam.
 
 ```sh
 sam build
-sam deploy --guided
+sam deploy
 ```
 
-updates (after changes to the CFN template or lambda code)
+## updates 
+
+after changes to the CFN template do:
+
 ```sh
 sam build
-sam deploy --resolve-image-repos
+sam deploy
 ```
 
+NOTE: if you change the lambda code, then you need to build and push images again before doing the sam build + deploy.
+
+## clean up
+
+delete the sam app
+```sh
+sam delete
+```
+
+delete the ecr repository. WARNING: this will force remove all images in the repo.
+
+```sh
+aws ecr delete-repository --force --repository-name $IMG_NAME 
+```
 
 ## refs
 

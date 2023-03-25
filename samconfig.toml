@@ -2,10 +2,8 @@ version = 0.1
 [default]
 [default.deploy]
 [default.deploy.parameters]
-stack_name = "my-node-lambda-stack"
-s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-ca1cudcm5x0d"
-s3_prefix = "my-node-lambda-stack"
-region = "ap-south-1"
+stack_name = "sam-docker-node-lambda-stack"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 image_repositories = []
+resolve_image_repos = true
