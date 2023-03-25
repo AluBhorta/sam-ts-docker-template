@@ -6,7 +6,7 @@ export const handler: Handler = async (event: APIGatewayEvent, context: Context)
     console.log(`event: ${JSON.stringify(event)}`)
     console.log(`context: ${JSON.stringify(context)}`)
     const body = JSON.parse(event?.body || null)
-    const greeting = body?.name ? body?.name : "World"
+    const greeting = body?.name ? body?.name : "lambda"
     return {
       statusCode: 200,
       headers: {"Content-Type": "application/json"},
