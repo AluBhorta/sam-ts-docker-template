@@ -1,5 +1,5 @@
 {
-  "name": "sam-docker-node-lambda",
+  "name": "sam-ts-docker-template",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",

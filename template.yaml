@@ -21,7 +21,7 @@ Parameters:
     Description: "Name of the Github user/org."
   GitHubRepoName:
     Type: String
-    Default: sam-docker-node-lambda
+    Default: sam-ts-docker-template
     Description: "Name of the Github repo."
 
 Resources:

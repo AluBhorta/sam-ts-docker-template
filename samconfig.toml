@@ -2,7 +2,7 @@ version = 0.1
 [default]
 [default.deploy]
 [default.deploy.parameters]
-stack_name = "sam-docker-node-lambda-stack"
+stack_name = "sam-ts-docker-template-stack"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
 image_repositories = []

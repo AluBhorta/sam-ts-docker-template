@@ -1,4 +1,4 @@
-# sam-docker-node-lambda
+# sam-ts-docker-template
 
 build and deploy serverless docker node lambdas using aws sam cli.
 
