@@ -1,4 +1,4 @@
-name: Simple CI/CD pipeline to build and deploy an AWS SAM app
+name: CI/CD pipeline to build and deploy an AWS SAM app that uses docker images
 
 on:
   push:
@@ -53,6 +53,6 @@ jobs:
       - name: SAM Deploy
         run: |
           sam deploy \
-            --parameter-overrides ParameterKey=ImageTag,ParameterValue=$IMAGE_TAG \
+            --parameter-overrides ParameterKey=ImageTag,ParameterValue=$IMAGE_TAG ParameterKey=ImageArchitecture,ParameterValue=x86_64 \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset
