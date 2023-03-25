@@ -1,6 +1,6 @@
 # sam-ts-docker-template
 
-build and deploy serverless docker node lambdas using aws sam cli.
+build and deploy serverless typescript docker apps with the sam cli and github ci/cd.
 
 ## prerequisites
 
