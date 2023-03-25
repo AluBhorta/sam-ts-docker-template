@@ -1,0 +1,58 @@
+name: Simple CI/CD pipeline to build and deploy an AWS SAM app
+
+on:
+  push:
+    branches:
+      - "master"
+
+env:
+  AWS_REGION: ap-south-1
+  PIPELINE_IAM_ROLE: ${{ secrets.PIPELINE_IAM_ROLE }}
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ env.PIPELINE_IAM_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+          mask-aws-account-id: true
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: set IMAGE_TAG as shortend commit SHA
+        run: echo "IMAGE_TAG=`echo ${GITHUB_SHA} | cut -c1-8`" >> $GITHUB_ENV
+
+      - name: build, tag and push docker image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_NAME: my-node-lambda # NOTE: this may need to be changed if your ECR repo name is different
+        run: |
+          docker build -t $ECR_REGISTRY/$IMAGE_NAME:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+
+      - name: Setup SAM CLI
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      - name: SAM Build
+        run: sam build
+
+      - name: SAM Deploy
+        run: |
+          sam deploy \
+            --parameter-overrides ParameterKey=ImageTag,ParameterValue=$IMAGE_TAG \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset

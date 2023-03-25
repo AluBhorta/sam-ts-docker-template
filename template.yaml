@@ -15,6 +15,14 @@ Parameters:
     Description: "Architecture of the docker image: arm64 or x86_64"
     Type: String
     Default: arm64
+  GitHubOrg:
+    Type: String
+    Default: AluBhorta
+    Description: "Name of the Github user/org."
+  GitHubRepoName:
+    Type: String
+    Default: sam-docker-node-lambda
+    Description: "Name of the Github repo."
 
 Resources:
   MyFunction:
@@ -38,7 +46,36 @@ Resources:
             Path: /hello
             Method: post
 
+  GithubOidc:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+
+  IAMRoleForPipeline:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRoleWithWebIdentity
+            Principal:
+              Federated: !Ref GithubOidc
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubOrg}/${GitHubRepoName}:*
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AdministratorAccess'
+
 Outputs:
   ApiEndpoint:
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello"
     Description: URL for the API endpoint
+  IAMRoleForPipeline:
+    Value: !GetAtt [IAMRoleForPipeline, Arn]
+    Description: "The ARN of the IAM Role that will be used by Github Actions for CI/CD. Copy it, and add it as a secret named 'PIPELINE_IAM_ROLE' to your Github repo."
