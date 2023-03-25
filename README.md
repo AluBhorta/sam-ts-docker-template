@@ -24,7 +24,6 @@ export AWS_REGION=ap-south-1
 build image
 
 ```sh
-npm run build
 docker build -t $IMG_NAME:$IMG_TAG .
 ```
 
@@ -56,18 +55,41 @@ sam build
 sam deploy
 ```
 
-## updates 
-
-after changes to the CFN template do:
+after `sam deploy` completes, it will output the API endpoint, something like `https://13iu4jrnew.execute-api.ap-south-1.amazonaws.com/Prod/hello`. copy and set it as an env var:
 
 ```sh
-sam build
-sam deploy
+export API_ENDPOINT=https://13iu4jrnew.execute-api.ap-south-1.amazonaws.com/Prod/hello
 ```
 
-NOTE: if you change the lambda code, then you need to build and push images again before doing the sam build + deploy.
+the API supports both GET and POST methods - test it out:
 
-## clean up
+```sh
+# GET
+curl $API_ENDPOINT
+
+# POST
+curl -X POST -H 'Content-type: application/json' -d '{"name":"Jon Doe"}' $API_ENDPOINT
+```
+
+### updates 
+
+after changes to the code do:
+
+```sh
+# update the IMG_TAG
+export IMG_TAG=v2
+
+# build and push the new image
+docker build -t $IMG_NAME:$IMG_TAG .
+docker tag $IMG_NAME:$IMG_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMG_NAME:$IMG_TAG
+docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMG_NAME:$IMG_TAG
+
+# build and deploy/update the sam app
+sam build
+sam deploy --parameter-overrides ParameterKey=ImageTag,ParameterValue=$IMG_TAG
+```
+
+### clean up
 
 delete the sam app
 ```sh
@@ -78,6 +100,21 @@ delete the ecr repository. WARNING: this will force remove all images in the rep
 
 ```sh
 aws ecr delete-repository --force --repository-name $IMG_NAME 
+```
+
+### testing locally
+
+run the built image mapped to local port 9000:
+```sh
+docker run --rm -p 9000:8080 $IMAGE_NAME:$IMG_TAG
+```
+
+on a separate terminal, invoke the function:
+```sh
+curl -X POST \
+  -H 'Content-Type: application/json' \
+  -d '{"body":"{\"name\":\"Jon Doe\"}"}' \
+  "http://localhost:9000/2015-03-31/functions/function/invocations"
 ```
 
 ## refs

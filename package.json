@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm i & tsc"
+    "tsc": "tsc"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +12,10 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.114",
     "@types/node": "^18.15.9",
+    "@types/uuid": "^9.0.1",
     "typescript": "^5.0.2"
+  },
+  "dependencies": {
+    "uuid": "^9.0.0"
   }
 }
