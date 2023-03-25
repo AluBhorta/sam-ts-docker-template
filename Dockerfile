@@ -1,5 +1,5 @@
 FROM public.ecr.aws/lambda/nodejs:18
 
-COPY app.mjs /var/task
+COPY dist/ /var/task/
 
-CMD [ "app.handler" ]
+CMD [ "index.handler" ]

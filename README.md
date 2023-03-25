@@ -3,17 +3,24 @@
 ## getting started
 
 ```sh
-export IMG_TAG=latest
+export LAMBDA_FUNC_NAME=my-node-lambda
 export IMAGE_NAME=my-node-lambda
+export IMG_TAG=latest
 ```
 
 ### local/dev
 
+build
 ```sh
 docker build -t $IMAGE_NAME:$IMG_TAG .
-docker run -p 9000:8080 $IMAGE_NAME
 ```
 
+run
+```sh
+docker run -p 9000:8080 $IMAGE_NAME:$IMG_TAG
+```
+
+test
 ```sh
 curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"payload":"hello world!"}'
 ```
@@ -33,6 +40,15 @@ build and push image
 docker build -t $IMAGE_NAME:$IMG_TAG .
 docker tag $IMAGE_NAME:$IMG_TAG 900142166256.dkr.ecr.ap-south-1.amazonaws.com/$IMAGE_NAME:$IMG_TAG
 docker push 900142166256.dkr.ecr.ap-south-1.amazonaws.com/$IMAGE_NAME:$IMG_TAG
+```
+
+create lambda function using the aws web console and specify the image.
+
+update lambda function
+```sh
+aws lambda update-function-code \
+  --function-name $LAMBDA_FUNC_NAME \
+  --image-uri 900142166256.dkr.ecr.ap-south-1.amazonaws.com/$IMAGE_NAME:$IMG_TAG
 ```
 
 ## refs
